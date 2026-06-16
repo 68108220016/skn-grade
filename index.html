@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ตรวจสอบผลการเรียน · โรงเรียนสวนกุหลาบวิทยาลัย นนทบุรี</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Sarabun', sans-serif;
+  background: #f0f4f8;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem 1rem 4rem;
+  color: #1a202c;
+}
+
+/* HEADER */
+.header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+.school-logo {
+  width: 72px; height: 72px;
+  background: #1a365d;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2rem; margin: 0 auto 0.75rem;
+  box-shadow: 0 4px 12px rgba(26,54,93,0.25);
+}
+.header h1 { font-size: 1.4rem; font-weight: 700; color: #1a365d; line-height: 1.3; }
+.header p { font-size: 0.85rem; color: #718096; margin-top: 0.3rem; }
+
+/* CARD */
+.card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+  padding: 1.75rem;
+  width: 100%; max-width: 440px;
+  margin-bottom: 1rem;
+}
+.card-title {
+  font-size: 1rem; font-weight: 700;
+  color: #1a365d; margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1.5px solid #e2e8f0;
+  display: flex; align-items: center; gap: 8px;
+}
+
+/* FORM */
+.field { margin-bottom: 1rem; }
+label { display: block; font-size: 0.82rem; font-weight: 600; color: #2d3748; margin-bottom: 0.4rem; }
+input[type="text"], input[type="password"] {
+  width: 100%;
+  border: 1.5px solid #cbd5e0;
+  border-radius: 10px;
+  padding: 0.65rem 1rem;
+  font-size: 1rem;
+  font-family: 'Sarabun', sans-serif;
+  color: #1a202c;
+  background: #f7fafc;
+  outline: none;
+  transition: border-color 0.2s, background 0.2s;
+}
+input:focus { border-color: #3182ce; background: white; }
+
+.pin-row { display: flex; gap: 8px; justify-content: center; margin: 0.5rem 0; }
+.pin-box {
+  width: 48px; height: 56px;
+  border: 1.5px solid #cbd5e0;
+  border-radius: 10px;
+  font-size: 1.5rem; font-weight: 700;
+  text-align: center;
+  background: #f7fafc;
+  color: #1a365d;
+  outline: none;
+  transition: border-color 0.2s;
+  caret-color: transparent;
+}
+.pin-box:focus { border-color: #3182ce; background: white; }
+.pin-box.filled { background: #ebf4ff; border-color: #90cdf4; }
+
+/* BUTTONS */
+.btn {
+  width: 100%;
+  padding: 0.75rem;
+  border: none; border-radius: 10px;
+  font-size: 1rem; font-family: 'Sarabun', sans-serif;
+  font-weight: 700; cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+.btn:active { transform: scale(0.98); }
+.btn-primary { background: #2b6cb0; color: white; }
+.btn-primary:hover { background: #2c5282; }
+.btn-primary:disabled { background: #90cdf4; cursor: not-allowed; }
+.btn-ghost { background: transparent; color: #3182ce; font-size: 0.85rem; font-weight: 600; padding: 0.5rem; margin-top: 0.5rem; }
+.btn-ghost:hover { text-decoration: underline; }
+
+/* ALERT */
+.alert {
+  padding: 0.65rem 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+  display: none;
+}
+.alert-error { background: #fff5f5; color: #c53030; border: 1px solid #feb2b2; }
+.alert-success { background: #f0fff4; color: #276749; border: 1px solid #9ae6b4; }
+.alert-info { background: #ebf8ff; color: #2b6cb0; border: 1px solid #90cdf4; }
+
+/* RESULT */
+.result-header {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 1rem; padding-bottom: 1rem;
+  border-bottom: 1.5px solid #e2e8f0;
+}
+.avatar {
+  width: 48px; height: 48px;
+  background: #ebf4ff; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem; flex-shrink: 0;
+}
+.student-name { font-size: 1.05rem; font-weight: 700; color: #1a365d; }
+.student-meta { font-size: 0.82rem; color: #718096; margin-top: 2px; }
+.tag {
+  display: inline-block; font-size: 0.72rem;
+  padding: 2px 8px; border-radius: 999px; font-weight: 600; margin-left: 4px;
+}
+.tag-0 { background: #fff5f5; color: #c53030; }
+.tag-r { background: #fffaf0; color: #c05621; }
+.tag-ms { background: #fffff0; color: #744210; }
+
+.info-box {
+  background: #f7fafc; border-radius: 8px;
+  padding: 0.65rem 0.9rem;
+  font-size: 0.82rem; color: #718096;
+  line-height: 1.6; margin-bottom: 1rem;
+}
+.pdf-btn {
+  display: flex; align-items: center; gap: 10px;
+  background: #ebf4ff; border: 1.5px solid #bee3f8;
+  border-radius: 10px; padding: 0.9rem 1.1rem;
+  font-size: 0.95rem; font-family: 'Sarabun', sans-serif;
+  font-weight: 700; color: #2b6cb0;
+  cursor: pointer; text-decoration: none;
+  transition: background 0.2s;
+}
+.pdf-btn:hover { background: #bee3f8; }
+.pdf-icon { font-size: 1.4rem; }
+.pdf-btn span { flex: 1; }
+
+.logout-btn {
+  display: block; text-align: center;
+  font-size: 0.82rem; color: #a0aec0;
+  margin-top: 1rem; cursor: pointer;
+  background: none; border: none; font-family: 'Sarabun', sans-serif;
+}
+.logout-btn:hover { color: #718096; }
+
+/* SCREENS */
+.screen { display: none; }
+.screen.active { display: block; }
+
+.update-badge {
+  display: inline-block;
+  font-size: 0.75rem; color: #718096;
+  background: #edf2f7; border-radius: 999px;
+  padding: 3px 12px; margin-bottom: 1.25rem;
+}
+
+/* STEP DOTS */
+.steps { display: flex; gap: 6px; justify-content: center; margin-bottom: 1.25rem; }
+.step-dot { width: 8px; height: 8px; border-radius: 50%; background: #e2e8f0; }
+.step-dot.active { background: #2b6cb0; }
+
+footer { margin-top: 2rem; font-size: 0.75rem; color: #a0aec0; text-align: center; }
+
+@media (max-width: 480px) {
+  .header h1 { font-size: 1.2rem; }
+  .card { padding: 1.25rem; }
+  .pin-box { width: 42px; height: 50px; font-size: 1.3rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="school-logo">🌹</div>
+  <h1>โรงเรียนสวนกุหลาบวิทยาลัย นนทบุรี</h1>
+  <p>ระบบตรวจสอบผลการเรียน (0 ร มผ)</p>
+</div>
+
+<!-- SCREEN 1: กรอกเลขประจำตัว -->
+<div class="card screen active" id="screen-id">
+  <div class="card-title">🔍 ค้นหาข้อมูลนักเรียน</div>
+  <div class="alert alert-error" id="err-id">ไม่พบเลขประจำตัวนี้ในระบบ กรุณาตรวจสอบอีกครั้ง</div>
+  <div class="field">
+    <label for="input-id">เลขประจำตัวนักเรียน</label>
+    <input type="text" id="input-id" placeholder="เช่น 32920" maxlength="10" inputmode="numeric">
+  </div>
+  <button class="btn btn-primary" id="btn-check-id">ถัดไป →</button>
+</div>
+
+<!-- SCREEN 2a: ตั้งรหัสครั้งแรก -->
+<div class="card screen" id="screen-setup">
+  <div class="card-title">🔐 ตั้งรหัสผ่านครั้งแรก</div>
+  <div class="steps">
+    <div class="step-dot active"></div>
+    <div class="step-dot active"></div>
+  </div>
+  <p style="font-size:0.88rem;color:#4a5568;margin-bottom:1rem;line-height:1.6">
+    ยินดีต้อนรับ! กรุณาตั้งรหัสผ่าน <strong>6 หลัก</strong><br>
+    สำหรับเข้าดูผลการเรียนของ <strong id="setup-name"></strong>
+  </p>
+  <div class="alert alert-error" id="err-setup"></div>
+  <label style="text-align:center;display:block;margin-bottom:0.5rem">รหัส 6 หลัก</label>
+  <div class="pin-row" id="pin-setup"></div>
+  <label style="text-align:center;display:block;margin:1rem 0 0.5rem">ยืนยันรหัส 6 หลัก</label>
+  <div class="pin-row" id="pin-confirm"></div>
+  <button class="btn btn-primary" id="btn-setup" style="margin-top:1.25rem">ตั้งรหัสและเข้าสู่ระบบ</button>
+  <button class="btn btn-ghost" onclick="goBack()">← กลับ</button>
+</div>
+
+<!-- SCREEN 2b: Login -->
+<div class="card screen" id="screen-login">
+  <div class="card-title">🔑 เข้าสู่ระบบ</div>
+  <p style="font-size:0.88rem;color:#4a5568;margin-bottom:1rem">
+    กรอกรหัสผ่าน 6 หลัก ของ <strong id="login-name"></strong>
+  </p>
+  <div class="alert alert-error" id="err-login"></div>
+  <div class="pin-row" id="pin-login"></div>
+  <button class="btn btn-primary" id="btn-login" style="margin-top:1.25rem">เข้าสู่ระบบ</button>
+  <button class="btn btn-ghost" onclick="goBack()">← กลับ</button>
+</div>
+
+<!-- SCREEN 3: ผลการเรียน -->
+<div class="card screen" id="screen-result">
+  <div class="update-badge" id="badge-date">อัปเดตล่าสุด: —</div>
+  <div class="result-header">
+    <div class="avatar">👤</div>
+    <div>
+      <div class="student-name" id="res-name"></div>
+      <div class="student-meta" id="res-meta"></div>
+    </div>
+  </div>
+  <div class="info-box" id="res-info"></div>
+  <a class="pdf-btn" id="res-pdf-btn" href="#" target="_blank">
+    <span class="pdf-icon">📋</span>
+    <span id="res-pdf-label">ดูผลการเรียน</span>
+    <span>→</span>
+  </a>
+  <button class="logout-btn" onclick="logout()">ออกจากระบบ</button>
+</div>
+
+<!-- Firebase SDKs -->
+<script src="firebase-config.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, get, set, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// ===================================================
+// CONFIG — แก้ค่าเหล่านี้ทุกครั้งที่อัปเดตข้อมูล
+// ===================================================
+const PDF_FOLDER = "./output_pdf/";
+const UPDATED_DATE = "15 มิถุนายน 2568";
+
+// ข้อมูลนักเรียน (ใช้ Python script generate อัตโนมัติ)
+// format: { "เลขประจำตัว": { name, class, tags: ["0","ร","มผ"] } }
+const STUDENTS = {
+  "32920": { name: "สมชาย ใจดี", class: "ม.4/1", tags: ["0"] },
+  "32926": { name: "สมหญิง รักเรียน", class: "ม.4/1", tags: ["ร"] },
+  "32968": { name: "วิชัย สุขสม", class: "ม.4/2", tags: ["มผ"] },
+  "32969": { name: "ณัฐพร มีสุข", class: "ม.4/2", tags: ["0","ร"] },
+  // เพิ่มนักเรียนต่อจากนี้...
+};
+// ===================================================
+
+let currentId = "";
+let currentStudent = null;
+
+// PIN BOXES helper
+function createPinBoxes(containerId, onComplete) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = "";
+  const inputs = [];
+  for (let i = 0; i < 6; i++) {
+    const inp = document.createElement("input");
+    inp.type = "password";
+    inp.maxLength = 1;
+    inp.inputMode = "numeric";
+    inp.className = "pin-box";
+    inp.addEventListener("input", () => {
+      inp.value = inp.value.replace(/\D/g, "");
+      inp.classList.toggle("filled", inp.value !== "");
+      if (inp.value && i < 5) inputs[i+1].focus();
+      if (inputs.every(b => b.value)) onComplete && onComplete();
+    });
+    inp.addEventListener("keydown", (e) => {
+      if (e.key === "Backspace" && !inp.value && i > 0) inputs[i-1].focus();
+    });
+    container.appendChild(inp);
+    inputs.push(inp);
+  }
+  return { getPin: () => inputs.map(b => b.value).join(""), clear: () => { inputs.forEach(b => { b.value = ""; b.classList.remove("filled"); }); inputs[0].focus(); } };
+}
+
+function hashPin(pin) {
+  // Simple hash for demo — ใน production ควรใช้ bcrypt ฝั่ง server
+  let hash = 0;
+  for (let i = 0; i < pin.length; i++) {
+    hash = ((hash << 5) - hash) + pin.charCodeAt(i);
+    hash |= 0;
+  }
+  return hash.toString(16);
+}
+
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+
+function showError(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.style.display = "block";
+  setTimeout(() => el.style.display = "none", 4000);
+}
+
+function goBack() {
+  showScreen("screen-id");
+  currentId = "";
+  currentStudent = null;
+}
+
+function logout() {
+  sessionStorage.removeItem("skn_auth");
+  goBack();
+}
+
+// SCREEN 1: ตรวจเลขประจำตัว
+let setupPins, confirmPins, loginPins;
+
+document.getElementById("btn-check-id").addEventListener("click", async () => {
+  const id = document.getElementById("input-id").value.trim();
+  if (!id) return;
+  if (!STUDENTS[id]) { showError("err-id", "ไม่พบเลขประจำตัวนี้ในระบบ"); return; }
+
+  currentId = id;
+  currentStudent = STUDENTS[id];
+
+  // เช็กว่าเคยตั้งรหัสยัง
+  const snap = await get(ref(db, `pins/${id}`));
+  if (snap.exists()) {
+    // มีรหัสแล้ว → หน้า login
+    document.getElementById("login-name").textContent = currentStudent.name;
+    loginPins = createPinBoxes("pin-login", null);
+    showScreen("screen-login");
+    setTimeout(() => document.querySelector("#pin-login .pin-box")?.focus(), 100);
+  } else {
+    // ยังไม่มีรหัส → หน้าตั้งรหัสครั้งแรก
+    document.getElementById("setup-name").textContent = currentStudent.name;
+    setupPins = createPinBoxes("pin-setup", null);
+    confirmPins = createPinBoxes("pin-confirm", null);
+    showScreen("screen-setup");
+    setTimeout(() => document.querySelector("#pin-setup .pin-box")?.focus(), 100);
+  }
+});
+
+document.getElementById("input-id").addEventListener("keydown", e => {
+  if (e.key === "Enter") document.getElementById("btn-check-id").click();
+});
+
+// SCREEN 2a: ตั้งรหัสครั้งแรก
+document.getElementById("btn-setup").addEventListener("click", async () => {
+  const pin = setupPins.getPin();
+  const confirm = confirmPins.getPin();
+  if (pin.length < 6) { showError("err-setup", "กรุณากรอกรหัส 6 หลักให้ครบ"); return; }
+  if (pin !== confirm) { showError("err-setup", "รหัสทั้งสองช่องไม่ตรงกัน กรุณากรอกใหม่"); confirmPins.clear(); return; }
+
+  await set(ref(db, `pins/${currentId}`), hashPin(pin));
+  showResult();
+});
+
+// SCREEN 2b: Login
+document.getElementById("btn-login").addEventListener("click", async () => {
+  const pin = loginPins.getPin();
+  if (pin.length < 6) { showError("err-login", "กรุณากรอกรหัส 6 หลักให้ครบ"); return; }
+
+  const snap = await get(ref(db, `pins/${currentId}`));
+  if (snap.val() === hashPin(pin)) {
+    sessionStorage.setItem("skn_auth", currentId);
+    showResult();
+  } else {
+    showError("err-login", "รหัสผ่านไม่ถูกต้อง กรุณาลองใหม่");
+    loginPins.clear();
+  }
+});
+
+function showResult() {
+  const s = currentStudent;
+  document.getElementById("res-name").textContent = s.name;
+  const tagHTML = s.tags.map(t => {
+    const cls = t === "0" ? "tag-0" : t === "ร" ? "tag-r" : "tag-ms";
+    return `<span class="tag ${cls}">${t}</span>`;
+  }).join("");
+  document.getElementById("res-meta").innerHTML = `เลข ${currentId} · ${s.class} · ${tagHTML}`;
+  document.getElementById("res-info").innerHTML =
+    `📌 มีผลการเรียน <strong>${s.tags.join(", ")}</strong> ค้างอยู่<br>กรุณาติดต่อครูประจำวิชาเพื่อดำเนินการแก้ไข`;
+  document.getElementById("res-pdf-btn").href = PDF_FOLDER + currentId + ".pdf";
+  document.getElementById("res-pdf-label").textContent = `ดูผลการเรียนของ ${s.name}`;
+  document.getElementById("badge-date").textContent = `อัปเดตล่าสุด: ${UPDATED_DATE}`;
+  showScreen("screen-result");
+}
+
+// Check session
+const savedId = sessionStorage.getItem("skn_auth");
+if (savedId && STUDENTS[savedId]) {
+  currentId = savedId;
+  currentStudent = STUDENTS[savedId];
+  showResult();
+}
+
+window.goBack = goBack;
+window.logout = logout;
+</script>
+
+<footer>ระบบนี้จัดทำโดยฝ่ายทะเบียนวัดผล · โรงเรียนสวนกุหลาบวิทยาลัย นนทบุรี</footer>
+</body>
+</html>

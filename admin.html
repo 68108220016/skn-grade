@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin · จัดการรหัสผ่านนักเรียน</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Sarabun', sans-serif;
+  background: #1a202c;
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 2rem 1rem; color: #1a202c;
+}
+.card {
+  background: white; border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+  padding: 2rem; width: 100%; max-width: 420px;
+}
+.card-title {
+  font-size: 1.1rem; font-weight: 700; color: #1a365d;
+  margin-bottom: 1.25rem; padding-bottom: 0.75rem;
+  border-bottom: 1.5px solid #e2e8f0;
+  display: flex; align-items: center; gap: 8px;
+}
+.field { margin-bottom: 1rem; }
+label { display: block; font-size: 0.82rem; font-weight: 600; color: #2d3748; margin-bottom: 0.4rem; }
+input[type="text"], input[type="password"] {
+  width: 100%; border: 1.5px solid #cbd5e0; border-radius: 10px;
+  padding: 0.65rem 1rem; font-size: 1rem;
+  font-family: 'Sarabun', sans-serif; color: #1a202c;
+  background: #f7fafc; outline: none;
+  transition: border-color 0.2s;
+}
+input:focus { border-color: #3182ce; background: white; }
+.btn {
+  width: 100%; padding: 0.75rem; border: none; border-radius: 10px;
+  font-size: 1rem; font-family: 'Sarabun', sans-serif;
+  font-weight: 700; cursor: pointer; transition: background 0.2s;
+}
+.btn-primary { background: #2b6cb0; color: white; }
+.btn-primary:hover { background: #2c5282; }
+.btn-danger { background: #e53e3e; color: white; margin-top: 0.5rem; }
+.btn-danger:hover { background: #c53030; }
+.alert {
+  padding: 0.65rem 1rem; border-radius: 8px;
+  font-size: 0.85rem; margin-bottom: 1rem; display: none;
+}
+.alert-error { background: #fff5f5; color: #c53030; border: 1px solid #feb2b2; }
+.alert-success { background: #f0fff4; color: #276749; border: 1px solid #9ae6b4; }
+.student-box {
+  background: #ebf4ff; border: 1.5px solid #bee3f8;
+  border-radius: 10px; padding: 0.85rem 1rem;
+  margin-bottom: 1rem; font-size: 0.9rem;
+  color: #2b6cb0; line-height: 1.6;
+}
+.screen { display: none; }
+.screen.active { display: block; }
+.badge-admin {
+  display: inline-block; background: #fed7d7; color: #c53030;
+  font-size: 0.72rem; font-weight: 700; padding: 2px 10px;
+  border-radius: 999px; margin-bottom: 1rem;
+}
+</style>
+</head>
+<body>
+
+<!-- SCREEN: Admin Login -->
+<div class="card screen active" id="screen-admin-login">
+  <div class="badge-admin">🔒 เฉพาะเจ้าหน้าที่</div>
+  <div class="card-title">⚙️ หน้าจัดการระบบ</div>
+  <div class="alert alert-error" id="err-admin-login">รหัสผ่านไม่ถูกต้อง</div>
+  <div class="field">
+    <label>รหัสผ่านเจ้าหน้าที่</label>
+    <input type="password" id="admin-pass" placeholder="กรอกรหัสผ่านเจ้าหน้าที่">
+  </div>
+  <button class="btn btn-primary" id="btn-admin-login">เข้าสู่ระบบ</button>
+</div>
+
+<!-- SCREEN: ค้นหานักเรียน -->
+<div class="card screen" id="screen-search">
+  <div class="badge-admin">🔒 โหมดเจ้าหน้าที่</div>
+  <div class="card-title">🔍 ค้นหานักเรียน</div>
+  <div class="alert alert-error" id="err-search">ไม่พบเลขประจำตัวนี้</div>
+  <div class="alert alert-success" id="ok-search"></div>
+  <div class="field">
+    <label>เลขประจำตัวนักเรียน</label>
+    <input type="text" id="search-id" placeholder="เช่น 32920" inputmode="numeric">
+  </div>
+  <button class="btn btn-primary" id="btn-search">ค้นหา</button>
+</div>
+
+<!-- SCREEN: จัดการรหัส -->
+<div class="card screen" id="screen-manage">
+  <div class="badge-admin">🔒 โหมดเจ้าหน้าที่</div>
+  <div class="card-title">⚙️ จัดการรหัสผ่าน</div>
+  <div class="alert alert-success" id="ok-manage"></div>
+  <div class="alert alert-error" id="err-manage"></div>
+  <div class="student-box" id="manage-info"></div>
+  <button class="btn btn-danger" id="btn-reset">🔄 Reset รหัสผ่าน (ให้ตั้งใหม่ครั้งหน้าที่เข้า)</button>
+  <button class="btn btn-primary" style="margin-top:0.5rem" onclick="goToSearch()">← ค้นหาคนอื่น</button>
+</div>
+
+<script src="firebase-config.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, remove, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// ข้อมูลนักเรียน (copy จาก index.html ให้ตรงกัน)
+const STUDENTS = {
+  "32920": { name: "สมชาย ใจดี", class: "ม.4/1" },
+  "32926": { name: "สมหญิง รักเรียน", class: "ม.4/1" },
+  "32968": { name: "วิชัย สุขสม", class: "ม.4/2" },
+  "32969": { name: "ณัฐพร มีสุข", class: "ม.4/2" },
+};
+
+let currentId = "";
+
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+function showError(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg; el.style.display = "block";
+  setTimeout(() => el.style.display = "none", 4000);
+}
+function showSuccess(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg; el.style.display = "block";
+  setTimeout(() => el.style.display = "none", 4000);
+}
+
+// Admin Login
+document.getElementById("btn-admin-login").addEventListener("click", () => {
+  const pass = document.getElementById("admin-pass").value;
+  if (pass === ADMIN_PASSWORD) {
+    showScreen("screen-search");
+  } else {
+    showError("err-admin-login", "รหัสผ่านไม่ถูกต้อง");
+  }
+});
+
+document.getElementById("admin-pass").addEventListener("keydown", e => {
+  if (e.key === "Enter") document.getElementById("btn-admin-login").click();
+});
+
+// ค้นหานักเรียน
+document.getElementById("btn-search").addEventListener("click", async () => {
+  const id = document.getElementById("search-id").value.trim();
+  if (!STUDENTS[id]) { showError("err-search", "ไม่พบเลขประจำตัวนี้ในระบบ"); return; }
+
+  currentId = id;
+  const s = STUDENTS[id];
+  const snap = await get(ref(db, `pins/${id}`));
+  const status = snap.exists() ? "✅ มีรหัสผ่านแล้ว" : "⚠️ ยังไม่เคยตั้งรหัสผ่าน";
+
+  document.getElementById("manage-info").innerHTML =
+    `<strong>${s.name}</strong><br>เลขประจำตัว: ${id} · ${s.class}<br>สถานะรหัสผ่าน: ${status}`;
+  showScreen("screen-manage");
+});
+
+document.getElementById("search-id").addEventListener("keydown", e => {
+  if (e.key === "Enter") document.getElementById("btn-search").click();
+});
+
+// Reset รหัส
+document.getElementById("btn-reset").addEventListener("click", async () => {
+  if (!confirm(`ยืนยัน Reset รหัสผ่านของ ${STUDENTS[currentId]?.name}?\nนักเรียน/ผู้ปกครองจะต้องตั้งรหัสใหม่ครั้งหน้าที่เข้าใช้งาน`)) return;
+  await remove(ref(db, `pins/${currentId}`));
+  showSuccess("ok-manage", `✅ Reset รหัสผ่านของ ${STUDENTS[currentId].name} เรียบร้อยแล้ว`);
+  document.getElementById("manage-info").innerHTML =
+    document.getElementById("manage-info").innerHTML.replace(/สถานะ.*/, "สถานะรหัสผ่าน: ⚠️ ยังไม่เคยตั้งรหัสผ่าน");
+});
+
+window.goToSearch = () => showScreen("screen-search");
+</script>
+</body>
+</html>
